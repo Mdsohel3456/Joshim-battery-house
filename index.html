@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>জসিম ব্যাটারি হাউজ</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:Arial,"Noto Sans Bengali",sans-serif;
+}
+
+body{
+    background:#f4f7fb;
+    color:#222;
+}
+
+header{
+    background:linear-gradient(135deg,#075e54,#128c7e);
+    color:white;
+    text-align:center;
+    padding:25px 15px;
+}
+
+header h1{
+    font-size:28px;
+    margin-bottom:8px;
+}
+
+header p{
+    font-size:15px;
+}
+
+.top-btn{
+    display:inline-block;
+    margin-top:15px;
+    background:white;
+    color:#075e54;
+    padding:10px 18px;
+    border-radius:25px;
+    text-decoration:none;
+    font-weight:bold;
+}
+
+.container{
+    max-width:1100px;
+    margin:auto;
+    padding:20px 15px;
+}
+
+.search{
+    width:100%;
+    padding:14px;
+    border:1px solid #ddd;
+    border-radius:12px;
+    margin-bottom:20px;
+    font-size:16px;
+    outline:none;
+}
+
+.products{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:18px;
+}
+
+.card{
+    background:white;
+    border-radius:16px;
+    overflow:hidden;
+    box-shadow:0 4px 15px rgba(0,0,0,.08);
+    transition:.2s;
+}
+
+.card:hover{
+    transform:translateY(-3px);
+}
+
+.card img{
+    width:100%;
+    height:210px;
+    object-fit:contain;
+    background:#fff;
+}
+
+.info{
+    padding:15px;
+}
+
+.info h2{
+    font-size:19px;
+    margin-bottom:8px;
+}
+
+.price{
+    color:#e63946;
+    font-size:21px;
+    font-weight:bold;
+    margin-bottom:12px;
+}
+
+.call{
+    display:block;
+    background:#128c7e;
+    color:white;
+    text-align:center;
+    text-decoration:none;
+    padding:11px;
+    border-radius:10px;
+    font-weight:bold;
+}
+
+.empty{
+    text-align:center;
+    padding:40px 10px;
+    color:#777;
+}
+
+footer{
+    text-align:center;
+    padding:25px 10px;
+    margin-top:30px;
+    background:#111;
+    color:white;
+}
+
+@media(max-width:500px){
+    header h1{
+        font-size:23px;
+    }
+
+    .products{
+        grid-template-columns:repeat(2,1fr);
+        gap:10px;
+    }
+
+    .card img{
+        height:150px;
+    }
+
+    .info{
+        padding:10px;
+    }
+
+    .info h2{
+        font-size:16px;
+    }
+
+    .price{
+        font-size:18px;
+    }
+
+    .call{
+        font-size:13px;
+        padding:9px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>🔋 জসিম ব্যাটারি হাউজ</h1>
+    <p>সকল ধরনের ব্যাটারি ও ব্যাটারি সামগ্রী</p>
+    <a class="top-btn" href="tel:01752058827">
+        📞 কল করুন: 01752058827
+    </a>
+</header>
+
+<div class="container">
+
+    <input
+        type="text"
+        id="search"
+        class="search"
+        placeholder="🔍 ব্যাটারির নাম দিয়ে খুঁজুন..."
+    >
+
+    <div id="products" class="products"></div>
+
+    <div id="empty" class="empty" style="display:none;">
+        কোনো ব্যাটারি পাওয়া যায়নি।
+    </div>
+
+</div>
+
+<footer>
+    <p>© 2026 জসিম ব্যাটারি হাউজ</p>
+    <p>📞 01752058827</p>
+</footer>
+
+<script>
+
+const defaultProducts = [
+    {
+        id:1,
+        name:"ব্যাটারি",
+        price:"যোগাযোগ করুন",
+        image:""
+    }
+];
+
+function getProducts(){
+    try{
+        const data = localStorage.getItem("joshimBatteryProducts");
+
+        if(data){
+            return JSON.parse(data);
+        }
+
+        return defaultProducts;
+    }catch(e){
+        return defaultProducts;
+    }
+}
+
+function showProducts(list = getProducts()){
+
+    const container = document.getElementById("products");
+    const empty = document.getElementById("empty");
+
+    container.innerHTML = "";
+
+    if(list.length === 0){
+        empty.style.display = "block";
+        return;
+    }
+
+    empty.style.display = "none";
+
+    list.forEach(product => {
+
+        const card = document.createElement("div");
+        card.className = "card";
+
+        const imageHTML = product.image
+            ? `<img src="${product.image}" alt="${escapeHTML(product.name)}">`
+            : `<div style="height:210px;display:flex;align-items:center;justify-content:center;font-size:60px;background:#fafafa;">🔋</div>`;
+
+        card.innerHTML = `
+            ${imageHTML}
+
+            <div class="info">
+                <h2>${escapeHTML(product.name)}</h2>
+
+                <div class="price">
+                    ৳ ${escapeHTML(product.price)}
+                </div>
+
+                <a class="call" href="tel:01752058827">
+                    📞 অর্ডারের জন্য কল
+                </a>
+            </div>
+        `;
+
+        container.appendChild(card);
+    });
+}
+
+function escapeHTML(text){
+    return String(text ?? "")
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+}
+
+document.getElementById("search").addEventListener("input",function(){
+
+    const keyword = this.value.toLowerCase().trim();
+
+    const filtered = getProducts().filter(product =>
+        product.name.toLowerCase().includes(keyword)
+    );
+
+    showProducts(filtered);
+});
+
+showProducts();
+
+</script>
+
+</body>
+</html> 
