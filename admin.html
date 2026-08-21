@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel - জসিম ব্যাটারি হাউজ</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    font-family:Arial,"Noto Sans Bengali",sans-serif;
+}
+
+body{
+    margin:0;
+    background:#f1f5f9;
+    color:#222;
+}
+
+header{
+    background:#075e54;
+    color:white;
+    text-align:center;
+    padding:22px 10px;
+}
+
+.container{
+    max-width:900px;
+    margin:auto;
+    padding:20px 15px;
+}
+
+.box{
+    background:white;
+    padding:20px;
+    border-radius:15px;
+    box-shadow:0 4px 15px rgba(0,0,0,.08);
+    margin-bottom:20px;
+}
+
+h2{
+    margin-top:0;
+}
+
+input{
+    width:100%;
+    padding:13px;
+    border:1px solid #ddd;
+    border-radius:10px;
+    margin:7px 0 13px;
+    font-size:16px;
+}
+
+button{
+    border:0;
+    padding:12px 18px;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:bold;
+    font-size:15px;
+}
+
+.add{
+    width:100%;
+    background:#075e54;
+    color:white;
+}
+
+.reset{
+    background:#555;
+    color:white;
+    margin-top:10px;
+}
+
+.products{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+    gap:15px;
+}
+
+.product{
+    background:#fff;
+    border-radius:15px;
+    padding:12px;
+    box-shadow:0 3px 12px rgba(0,0,0,.08);
+}
+
+.product img{
+    width:100%;
+    height:180px;
+    object-fit:contain;
+    background:#fafafa;
+    border-radius:10px;
+}
+
+.product h3{
+    margin:10px 0 5px;
+}
+
+.product p{
+    color:#e63946;
+    font-weight:bold;
+}
+
+.edit{
+    background:#f0ad00;
+    color:white;
+    margin-right:5px;
+}
+
+.delete{
+    background:#e63946;
+    color:white;
+}
+
+.home{
+    display:block;
+    text-align:center;
+    margin-top:15px;
+    color:#075e54;
+    text-decoration:none;
+    font-weight:bold;
+}
+
+.preview{
+    max-width:150px;
+    max-height:150px;
+    display:none;
+    margin:10px auto;
+    object-fit:contain;
+    border-radius:10px;
+}
+
+.message{
+    padding:10px;
+    margin-bottom:15px;
+    border-radius:8px;
+    display:none;
+}
+
+@media(max-width:500px){
+
+    .container{
+        padding:12px;
+    }
+
+    .box{
+        padding:15px;
+    }
+
+    .products{
+        grid-template-columns:1fr 1fr;
+        gap:10px;
+    }
+
+    .product img{
+        height:130px;
+    }
+
+    .product h3{
+        font-size:15px;
+    }
+
+    .product p{
+        font-size:14px;
+    }
+
+    button{
+        font-size:13px;
+        padding:9px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>🔐 Admin Panel</h1>
+    <p>জসিম ব্যাটারি হাউজ</p>
+</header>
+
+<div class="container">
+
+<div class="box">
+
+    <h2>➕ ব্যাটারি যোগ করুন</h2>
+
+    <div id="message" class="message"></div>
+
+    <label>ব্যাটারির নাম</label>
+    <input type="text" id="name" placeholder="যেমন: Rahimafrooz Battery">
+
+    <label>দাম</label>
+    <input type="text" id="price" placeholder="যেমন: 12500">
+
+    <label>ব্যাটারির ছবি</label>
+    <input
+        type="file"
+        id="image"
+        accept="image/*"
+    >
+
+    <img id="preview" class="preview">
+
+    <button class="add" onclick="saveProduct()">
+        💾 সংরক্ষণ করুন
+    </button>
+
+    <button class="reset" onclick="clearForm()">
+        🔄 নতুন করে লিখুন
+    </button>
+
+    <a class="home" href="index.html">
+        🏠 ওয়েবসাইট দেখুন
+    </a>
+
+</div>
+
+<div class="box">
+
+    <h2>📦 ব্যাটারির তালিকা</h2>
+
+    <div id="productList" class="products"></div>
+
+</div>
+
+</div>
+
+<script>
+
+let products = getProducts();
+let editingId = null;
+let selectedBase64 = "";
+
+function getProducts(){
+
+    try{
+
+        const data =
+            localStorage.getItem("joshimBatteryProducts");
+
+        return data ? JSON.parse(data) : [];
+
+    }catch(error){
+
+        return [];
+
+    }
+}
+
+function saveData(){
+
+    localStorage.setItem(
+        "joshimBatteryProducts",
+        JSON.stringify(products)
+    );
+
+}
+
+document.getElementById("image").addEventListener("change",function(){
+
+    const file = this.files[0];
+
+    if(!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = function(e){
+
+        selectedBase64 = e.target.result;
+
+        const preview =
+            document.getElementById("preview");
+
+        preview.src = selectedBase64;
+        preview.style.display = "block";
+
+    };
+
+    reader.readAsDataURL(file);
+
+});
+
+function saveProduct(){
+
+    const name =
+        document.getElementById("name").value.trim();
+
+    const price =
+        document.getElementById("price").value.trim();
+
+    if(!name || !price){
+
+        showMessage(
+            "ব্যাটারির নাম ও দাম দিন।",
+            "#ffe0e0"
+        );
+
+        return;
+    }
+
+    if(editingId !== null){
+
+        const index =
+            products.findIndex(p => p.id === editingId);
+
+        if(index !== -1){
+
+            products[index].name = name;
+            products[index].price = price;
+
+            if(selectedBase64){
+                products[index].image = selectedBase64;
+            }
+
+        }
+
+        showMessage(
+            "ব্যাটারির তথ্য আপডেট হয়েছে।",
+            "#d9fdd3"
+        );
+
+    }else{
+
+        const product = {
+
+            id:Date.now(),
+
+            name:name,
+
+            price:price,
+
+            image:selectedBase64
+
+        };
+
+        products.push(product);
+
+        showMessage(
+            "ব্যাটারি সফলভাবে যোগ হয়েছে।",
+            "#d9fdd3"
+        );
+
+    }
+
+    saveData();
+
+    clearForm();
+
+    renderProducts();
+}
+
+function renderProducts(){
+
+    const list =
+        document.getElementById("productList");
+
+    list.innerHTML = "";
+
+    if(products.length === 0){
+
+        list.innerHTML =
+            "<p>এখনো কোনো ব্যাটারি যোগ করা হয়নি।</p>";
+
+        return;
+    }
+
+    products.forEach(product => {
+
+        const div =
+            document.createElement("div");
+
+        div.className = "product";
+
+        const image = product.image
+            ? `<img src="${product.image}">`
+            : `<div style="height:130px;display:flex;align-items:center;justify-content:center;font-size:50px;">🔋</div>`;
+
+        div.innerHTML = `
+
+            ${image}
+
+            <h3>${escapeHTML(product.name)}</h3>
+
+            <p>৳ ${escapeHTML(product.price)}</p>
+
+            <button
+                class="edit"
+                onclick="editProduct(${product.id})">
+                ✏️ Edit
+            </button>
+
+            <button
+                class="delete"
+                onclick="deleteProduct(${product.id})">
+                🗑️ Delete
+            </button>
+        `;
+
+        list.appendChild(div);
+
+    });
+
+}
+
+function editProduct(id){
+
+    const product =
+        products.find(p => p.id === id);
+
+    if(!product) return;
+
+    editingId = id;
+
+    document.getElementById("name").value =
+        product.name;
+
+    document.getElementById("price").value =
+        product.price;
+
+    selectedBase64 = product.image || "";
+
+    const preview =
+        document.getElementById("preview");
+
+    if(selectedBase64){
+
+        preview.src = selectedBase64;
+        preview.style.display = "block";
+
+    }
+
+    window.scrollTo({
+        top:0,
+        behavior:"smooth"
+    });
+
+}
+
+function deleteProduct(id){
+
+    const confirmDelete =
+        confirm("এই ব্যাটারিটি মুছে ফেলবেন?");
+
+    if(!confirmDelete) return;
+
+    products =
+        products.filter(p => p.id !== id);
+
+    saveData();
+
+    renderProducts();
+
+}
+
+function clearForm(){
+
+    editingId = null;
+    selectedBase64 = "";
+
+    document.getElementById("name").value = "";
+    document.getElementById("price").value = "";
+    document.getElementById("image").value = "";
+
+    document.getElementById("preview").style.display =
+        "none";
+
+    document.getElementById("preview").src = "";
+
+}
+
+function showMessage(text,bg){
+
+    const msg =
+        document.getElementById("message");
+
+    msg.innerText = text;
+    msg.style.background = bg;
+    msg.style.display = "block";
+
+    setTimeout(() => {
+
+        msg.style.display = "none";
+
+    },3000);
+
+}
+
+function escapeHTML(text){
+
+    return String(text ?? "")
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+
+}
+
+renderProducts();
+
+</script>
+
+</body>
+</html>
